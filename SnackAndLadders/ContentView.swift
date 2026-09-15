@@ -24,12 +24,19 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                RadialGradient(colors: [.blue, .green, .black], center: .center, startRadius: 10, endRadius: 500)
+                RadialGradient(colors: [.mint, .green, .black], center: .center, startRadius: 10, endRadius: 500)
                     .ignoresSafeArea()
                 
                 LazyVStack {
-                    GridPosition()
-                    
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
+                        
+                        GridPosition()
+                    }
+                    .frame(width: 405, height: 405)
+                    .padding()
                     // Dice View
                     Dice { rolled in
                         value = rolled
@@ -58,8 +65,8 @@ struct ContentView: View {
                         let index = (row) * 10 + (1 + colOffset)
                         
                         RoundedRectangle(cornerRadius: 3)
-                            .foregroundStyle(.white)
-                            .opacity(0.5)
+                            .foregroundStyle(styledColour(index: index)) // colour according to indices
+                            .opacity(0.9)
                             .aspectRatio(1, contentMode: .fit)
                             .overlay(
                                 Text("\(index)")
@@ -71,7 +78,7 @@ struct ContentView: View {
                                 HStack {
                                     if player1Position == index {
                                         PawnShape()
-                                            .fill(Color.red)
+                                            .fill(Color.mint)
                                             .frame(width: 12, height: 12)
                                             .scaleEffect(player1Scale)
                                     }
@@ -109,6 +116,17 @@ struct ContentView: View {
                     }
                 } else {
                     timer.invalidate()
+                    
+                    // Snake & Lader section
+                    let newPos = laddersAndSnack(at: player1Position) ?? player1Position
+                    
+                    if newPos != player1Position {
+                        // Trigger smooth slide/climb animation if position changed
+                        withAnimation(.easeInOut(duration: 0.6)) {
+                            player1Position = newPos
+                        }
+                    }
+                    
                     isMoving = false
                     
                     if player1Position == 100 {
@@ -129,6 +147,14 @@ struct ContentView: View {
                     }
                 } else {
                     timer.invalidate()
+                    // --- SNAKE & LADDER LOGIC START ---
+                    let newPos = laddersAndSnack(at: player2Position) ?? player2Position
+                                    
+                    if newPos != player2Position {
+                        withAnimation(.easeInOut(duration: 0.6)) {
+                            player2Position = newPos
+                        }
+                    }
                     isMoving = false
                     
                     if player2Position == 100 {
@@ -148,6 +174,31 @@ struct ContentView: View {
         player = 1
         isGameOver = false
         isMoving = false
+    }
+    
+    func styledColour(index: Int) -> Color {
+        if index % 2 == 0 {
+            return .white
+        } else {
+            return .red
+        }
+    }
+    
+    func laddersAndSnack(at position: Int) -> Int? {
+        switch position {
+            case 5:  return 67
+            case 16: return 58
+            case 42: return 64
+            case 59: return 98
+            case 99: return 4
+            case 92: return 71
+            case 69: return 19
+            case 62: return 42
+            case 56: return 36
+            case 19: return 7
+            case 32: return 13
+            default: return position
+            }
     }
 }
 
