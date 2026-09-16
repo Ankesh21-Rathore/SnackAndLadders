@@ -21,6 +21,14 @@ struct ContentView: View {
     @State private var isGameOver = false
     @State private var winnerMessage = ""
     
+    @State private var cellCenters: [Int: CGPoint] = [:]
+    let ladderPairs: [(start: Int, end: Int)] = [
+        (5, 88),
+        (12, 34),
+        (42, 64),
+        (59, 98)
+    ]
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -28,12 +36,26 @@ struct ContentView: View {
                     .ignoresSafeArea()
                 
                 LazyVStack {
+                    playerview(for: player)
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
                             .foregroundStyle(.white)
                             .opacity(0.5)
                         
                         GridPosition()
+                        
+                            .coordinateSpace(name: "BOARD")
+                        
+                        // Draw ladders
+                        ForEach(ladderPairs, id: \.start) { ladder in
+                            if let startPt = cellCenters[ladder.start],
+                               let endPt = cellCenters[ladder.end] {
+                                LadderShape(start: startPt, end: endPt, ladderWidth: 8, ladderHeight: 10)
+                                    .stroke(Color.brown, lineWidth: 3) 
+                                    .shadow(color: .black.opacity(0.3), radius: 1, x: 1, y: 1)
+                                    .allowsHitTesting(false)
+                            }
+                        }
                     }
                     .frame(width: 405, height: 405)
                     .padding()
@@ -68,6 +90,16 @@ struct ContentView: View {
                             .foregroundStyle(styledColour(index: index)) // colour according to indices
                             .opacity(0.9)
                             .aspectRatio(1, contentMode: .fit)
+                            .background(
+                                    GeometryReader { geo in
+                                        Color.clear.onAppear {
+                                            cellCenters[index] = CGPoint(
+                                                x: geo.frame(in: .named("BOARD")).midX,
+                                                y: geo.frame(in: .named("BOARD")).midY
+                                            )
+                                        }
+                                    }
+                                )
                             .overlay(
                                 Text("\(index)")
                                     .foregroundColor(.black)
@@ -186,20 +218,30 @@ struct ContentView: View {
     
     func laddersAndSnack(at position: Int) -> Int? {
         switch position {
-            case 5:  return 67
-            case 16: return 58
-            case 42: return 64
-            case 59: return 98
-            case 99: return 4
-            case 92: return 71
-            case 69: return 19
-            case 62: return 42
-            case 56: return 36
-            case 19: return 7
-            case 32: return 13
-            default: return position
-            }
+        case 5:  return 88
+        case 12: return 34
+        case 42: return 64
+        case 59: return 98
+        case 99: return 4
+        case 92: return 71
+        case 69: return 19
+        case 62: return 42
+        case 56: return 36
+        case 49: return 7
+        case 32: return 13
+        case 19: return 2
+        default: return position
+        }
     }
+    
+    // Players batting
+    
+    func playerview(for player: Int) -> some View {
+        Text("Player: \(player)")
+            .font(.largeTitle)
+            .foregroundStyle(.regularMaterial)
+    }
+    
 }
 
 #Preview {

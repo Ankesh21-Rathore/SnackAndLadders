@@ -52,16 +52,17 @@ struct DiceFace: View {
     
     var body: some View {
         ZStack {
-            if value == 1 {
+            switch value {
+            case 1:
                 Dot()
-            } else if value == 2 {
+            case 2:
                 HStack {
                     Dot()
                     Spacer()
                     Dot()
                 }
                 .padding()
-            } else if value == 3 {
+            case 3:
                 Grid {
                     GridRow {
                         Spacer()
@@ -82,17 +83,14 @@ struct DiceFace: View {
                     }
                 }
                 .padding()
-            }
-            else if value == 4 {
+            case 4:
                 HStack {
                     VStack {
                         Dot()
                         Spacer()
                         Dot()
                     }
-                    
                     Spacer()
-                    
                     VStack {
                         Dot()
                         Spacer()
@@ -100,7 +98,7 @@ struct DiceFace: View {
                     }
                 }
                 .padding()
-            } else if value == 5 {
+            case 5:
                 HStack {
                     VStack {
                         Dot()
@@ -115,7 +113,7 @@ struct DiceFace: View {
                     }
                 }
                 .padding()
-            } else if value == 6 {
+            case 6:
                 HStack {
                     VStack {
                         Dot()
@@ -130,6 +128,9 @@ struct DiceFace: View {
                     }
                 }
                 .padding()
+            default:
+                // Fallback for unexpected values; render an empty face
+                EmptyView()
             }
         }
     }
