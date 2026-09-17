@@ -25,7 +25,7 @@ struct ContentView: View {
     let ladderPairs: [(start: Int, end: Int)] = [
         (5, 88),
         (12, 34),
-        (42, 64),
+        (44, 64),
         (59, 98)
     ]
     
@@ -133,10 +133,26 @@ struct ContentView: View {
         guard !isGameOver && !isMoving else { return }
         isMoving = true
         
-        let targetPosition = min(100, (player == 1 ? player1Position : player2Position) + steps)
+        // Determine current and proposed positions safely
+        let currentPosition = (player == 1) ? player1Position : player2Position
+        let proposed = currentPosition + steps
+        let targetPosition = min(100, proposed)
+
+        // If the proposed move would exceed 100, do not move at all
+        if proposed > 100 {
+            isMoving = false
+            return
+        }
+
+        // Apply the bulk step so the timer animates step-by-step up to targetPosition
+        if player == 1 {
+            player1Position = currentPosition // ensure starting from current
+        } else {
+            player2Position = currentPosition
+        }
         
         // Step-by-step movement animation loop
-        Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { timer in
+        Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { timer in
             if player == 1 {
                 if player1Position < targetPosition {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
@@ -164,6 +180,8 @@ struct ContentView: View {
                     if player1Position == 100 {
                         winnerMessage = "Player 1 Wins!"
                         isGameOver = true
+                    } else if steps == 6 { // if dice-face is 6
+                        player = 1
                     } else {
                         player = 2
                     }
@@ -192,6 +210,8 @@ struct ContentView: View {
                     if player2Position == 100 {
                         winnerMessage = "Player 2 Wins!"
                         isGameOver = true
+                    } else if steps == 6 { // if dice-face is 6
+                        player = 2
                     } else {
                         player = 1
                     }
@@ -220,7 +240,7 @@ struct ContentView: View {
         switch position {
         case 5:  return 88
         case 12: return 34
-        case 42: return 64
+        case 44: return 64
         case 59: return 98
         case 99: return 4
         case 92: return 71
