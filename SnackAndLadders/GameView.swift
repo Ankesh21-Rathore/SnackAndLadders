@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct GameView: View {
     let columns = Array(repeating: GridItem(.flexible(minimum: 0, maximum: .infinity), spacing: 4), count: 10)
     @State private var value = 1
     @State private var player: Int = 1
@@ -27,6 +27,15 @@ struct ContentView: View {
         (12, 34),
         (44, 64),
         (59, 98)
+    ]
+    
+    let snakePairs: [(start: Int, end: Int)] = [
+            (99, 4),
+            (92, 71),
+            (61, 42),
+            (96, 56),
+            (48, 7),
+            (32, 9)
     ]
     
     var body: some View {
@@ -56,6 +65,25 @@ struct ContentView: View {
                                     .allowsHitTesting(false)
                             }
                         }
+                        
+                        // Snacke View
+                        // Draw Snakes
+                        ForEach(snakePairs, id: \.start) { snake in
+                            if let startPt = cellCenters[snake.start],
+                               let endPt = cellCenters[snake.end] {
+                                let snakeGradiant = LinearGradient(
+                                    colors: [.green, .orange, .mint], // Color transitions from head (start) to tail (end)
+                                                startPoint: UnitPoint(x: startPt.x / 405, y: startPt.y / 405), // Normalized to board size
+                                                endPoint: UnitPoint(x: endPt.x / 405, y: endPt.y / 405)
+                                )
+                                SnakeShape(start: startPt, end: endPt, bodyWidth: 10)
+                                    .stroke(
+                                        snakeGradiant,
+                                        style: StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round))
+                                    .shadow(color: .black.opacity(0.3), radius: 2, x: 1, y: 1)
+                                    .allowsHitTesting(false)
+                            }
+                        }
                     }
                     .frame(width: 405, height: 405)
                     .padding()
@@ -71,7 +99,7 @@ struct ContentView: View {
                         }
                     }
                 }
-                .navigationBarTitle("Snack & Ladders")
+                .navigationBarTitle("Snake & Ladders")
             }
         }
     }
@@ -244,12 +272,10 @@ struct ContentView: View {
         case 59: return 98
         case 99: return 4
         case 92: return 71
-        case 69: return 19
-        case 62: return 42
-        case 56: return 36
-        case 49: return 7
-        case 32: return 13
-        case 19: return 2
+        case 61: return 42
+        case 96: return 56
+        case 48: return 7
+        case 32: return 9
         default: return position
         }
     }
@@ -265,5 +291,35 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    GameView()
+}
+
+struct SnakeShape: Shape {
+    var start: CGPoint
+    var end: CGPoint
+    var bodyWidth: CGFloat = 8
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+
+        // Compute control points to create a smooth, wavy curve between start and end
+        let dx = end.x - start.x
+        let dy = end.y - start.y
+        let distance = hypot(dx, dy)
+        let angle = atan2(dy, dx)
+
+        // Choose two control points offset perpendicular to the main line to create an S-curve
+        let normal = CGPoint(x: -sin(angle), y: cos(angle))
+        let controlOffset = max(20, min(60, distance / 4))
+
+        let cp1 = CGPoint(x: start.x + dx * 0.33 + normal.x * controlOffset,
+                          y: start.y + dy * 0.33 + normal.y * controlOffset)
+        let cp2 = CGPoint(x: start.x + dx * 0.66 - normal.x * controlOffset,
+                          y: start.y + dy * 0.66 - normal.y * controlOffset)
+
+        path.move(to: start)
+        path.addCurve(to: end, control1: cp1, control2: cp2)
+
+        return path
+    }
 }
