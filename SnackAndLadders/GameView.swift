@@ -293,33 +293,3 @@ struct GameView: View {
 #Preview {
     GameView()
 }
-
-struct SnakeShape: Shape {
-    var start: CGPoint
-    var end: CGPoint
-    var bodyWidth: CGFloat = 8
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-
-        // Compute control points to create a smooth, wavy curve between start and end
-        let dx = end.x - start.x
-        let dy = end.y - start.y
-        let distance = hypot(dx, dy)
-        let angle = atan2(dy, dx)
-
-        // Choose two control points offset perpendicular to the main line to create an S-curve
-        let normal = CGPoint(x: -sin(angle), y: cos(angle))
-        let controlOffset = max(20, min(60, distance / 4))
-
-        let cp1 = CGPoint(x: start.x + dx * 0.33 + normal.x * controlOffset,
-                          y: start.y + dy * 0.33 + normal.y * controlOffset)
-        let cp2 = CGPoint(x: start.x + dx * 0.66 - normal.x * controlOffset,
-                          y: start.y + dy * 0.66 - normal.y * controlOffset)
-
-        path.move(to: start)
-        path.addCurve(to: end, control1: cp1, control2: cp2)
-
-        return path
-    }
-}

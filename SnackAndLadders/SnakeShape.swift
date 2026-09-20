@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SnackeShape: Shape {
+struct SnakeShape: Shape {
     var start: CGPoint
     var end: CGPoint
     var bodyWidth: CGFloat = 8
