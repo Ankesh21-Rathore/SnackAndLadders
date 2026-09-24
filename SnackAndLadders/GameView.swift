@@ -99,7 +99,6 @@ struct GameView: View {
                         }
                     }
                 }
-                .navigationBarTitle("Snake & Ladders")
             }
         }
     }

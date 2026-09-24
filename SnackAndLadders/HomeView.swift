@@ -23,6 +23,7 @@ struct HomeView: View {
                 .foregroundStyle(.mint)
                 .bold()
             }
+            .navigationTitle("Snake and Ladders")
         }
     }
 }
