@@ -12,12 +12,14 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(colors: [.black, .white], startPoint: .top, endPoint: .bottom)
+                LinearGradient(colors: [.white, .black], startPoint: .top, endPoint: .bottom)
                     .ignoresSafeArea()
                 
                 NavigationLink(destination: GameView()) {
                     Label("Play Game", systemImage: "play.circle.fill")
+                    
                 }
+                .scaledToFit()
                 .foregroundStyle(.mint)
                 .bold()
             }
