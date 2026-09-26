@@ -9,6 +9,9 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var isPresented: Bool = false
+    @State private var selectedPlayerCount: Int = 2
+    
+    let playerColors: [Color] = [.blue, .yellow, .red, .green, .brown] // for matching 1 to 5 players colors
     
     var body: some View {
         NavigationStack {
@@ -21,173 +24,12 @@ struct HomeView: View {
                     .frame(width: 400, height: 400)
                 VStack {
                     HStack {
-                        Button {
-                            isPresented.toggle()
-                        } label: {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .foregroundStyle(.white)
-                                    .opacity(0.6)
-                                    .frame(width: 150, height: 150)
-                                
-                                VStack {
-                                    HStack {
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(.yellow)
-                                                .frame(width: 40, height: 40)
-                                            Image(systemName: "person.fill")
-                                                .foregroundStyle(.black)
-                                        }
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(.blue)
-                                                .frame(width: 40, height: 40)
-                                            Image(systemName: "person.fill")
-                                                .foregroundStyle(.black)
-                                        }
-                                        
-                                    }
-                                }
-                            }
-                        }
-                        Button {
-                            isPresented.toggle()
-                        } label: {
-                            
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .foregroundStyle(.white)
-                                    .opacity(0.6)
-                                    .frame(width: 150, height: 150)
-                                
-                                VStack {
-                                    
-                                    HStack {
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(.yellow)
-                                                .frame(width: 40, height: 40)
-                                            Image(systemName: "person.fill")
-                                                .foregroundStyle(.black)
-                                        }
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(.blue)
-                                                .frame(width: 40, height: 40)
-                                            Image(systemName: "person.fill")
-                                                .foregroundStyle(.black)
-                                        }
-                                    }
-                                    ZStack {
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .foregroundStyle(.red)
-                                            .frame(width: 40, height: 40)
-                                        Image(systemName: "person.fill")
-                                            .foregroundStyle(.black)
-                                    }
-                                }
-                            }
-                        }
+                        playerView(count: 2)
+                        playerView(count: 3)
                     }
                     HStack {
-                        Button {
-                            isPresented.toggle()
-                        } label: {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .foregroundStyle(.white)
-                                    .opacity(0.6)
-                                    .frame(width: 150, height: 150)
-                                
-                                VStack {
-                                    HStack {
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(.yellow)
-                                                .frame(width: 40, height: 40)
-                                            Image(systemName: "person.fill")
-                                                .foregroundStyle(.black)
-                                        }
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(.blue)
-                                                .frame(width: 40, height: 40)
-                                            Image(systemName: "person.fill")
-                                                .foregroundStyle(.black)
-                                        }
-                                    }
-                                    HStack {
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(.red)
-                                                .frame(width: 40, height: 40)
-                                            Image(systemName: "person.fill")
-                                                .foregroundStyle(.black)
-                                        }
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(.green)
-                                                .frame(width: 40, height: 40)
-                                            Image(systemName: "person.fill")
-                                                .foregroundStyle(.black)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        
-                        Button {
-                            isPresented.toggle()
-                        } label: {
-                            ZStack(alignment: .center) {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .foregroundStyle(.white)
-                                    .opacity(0.6)
-                                    .frame(width: 150, height: 150)
-                                VStack {
-                                    HStack {
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(.yellow)
-                                                .frame(width: 40, height: 40)
-                                            Image(systemName: "person.fill")
-                                                .foregroundStyle(.black)
-                                        }
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(.blue)
-                                                .frame(width: 40, height: 40)
-                                            Image(systemName: "person.fill")
-                                                .foregroundStyle(.black)
-                                        }
-                                    }
-                                    HStack {
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(.red)
-                                                .frame(width: 40, height: 40)
-                                            Image(systemName: "person.fill")
-                                                .foregroundStyle(.black)
-                                        }
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(.green)
-                                                .frame(width: 40, height: 40)
-                                            Image(systemName: "person.fill")
-                                                .foregroundStyle(.black)
-                                        }
-                                    }
-                                    ZStack {
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .foregroundStyle(.brown)
-                                            .frame(width: 40, height: 40)
-                                        Image(systemName: "person.fill")
-                                            .foregroundStyle(.black)
-                                    }
-                                }
-                            }
-                        }
+                        playerView(count: 4)
+                        playerView(count: 5)
                     }
                 }
             }
@@ -197,7 +39,7 @@ struct HomeView: View {
             NavigationStack {
                 VStack {
                     NavigationLink(destination: GameView()) {
-                        Label("Play Game", systemImage: "play.circle.fill")
+                        Label("Play Game (\(selectedPlayerCount) Players)", systemImage: "play.circle.fill")
                             .scaledToFit()
                             .foregroundStyle(.mint)
                             .bold()
@@ -205,6 +47,68 @@ struct HomeView: View {
                 }
             }
 
+        }
+    }
+    
+    func playerView(count: Int) -> some View {
+        Button {
+            selectedPlayerCount = count
+            isPresented.toggle()
+        } label: {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .foregroundStyle(.white)
+                    .opacity(0.6)
+                    .frame(width: 150, height: 150)
+    
+                    let colorsToDisplay = Array(playerColors.prefix(count))
+                    
+                    let topRow = Array(colorsToDisplay.prefix(2))
+                    let middleRow = Array(colorsToDisplay.dropFirst(2).prefix(2))
+                    let bottomRow = Array(colorsToDisplay.dropFirst(4))
+                    VStack(spacing: 8) {
+                        
+                        HStack(spacing: 8) {
+                            ForEach(topRow, id: \.self) { color in
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .foregroundStyle(color)
+                                        .frame(width: 40, height: 40)
+                                    Image(systemName: "person.fill")
+                                        .foregroundStyle(.black)
+                                }
+                            }
+                        }
+                            if !middleRow.isEmpty {
+                                HStack(spacing: 8) {
+                                    ForEach(middleRow, id: \.self) { color in
+                                        ZStack {
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .foregroundStyle(color)
+                                                .frame(width: 40, height: 40)
+                                            Image(systemName: "person.fill")
+                                                .foregroundStyle(.black)
+                                        }
+                                    }
+                                }
+                            }
+                            if !bottomRow.isEmpty {
+                                HStack(spacing: 8) {
+                                    ForEach(bottomRow, id: \.self) { color in
+                                        ZStack {
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .foregroundStyle(color)
+                                                .frame(width: 40, height: 40)
+                                            Image(systemName: "person.fill")
+                                                .foregroundStyle(.black)
+                                        }
+                                    }
+                                }
+                            }
+                            
+                        
+                }
+            }
         }
     }
 }
