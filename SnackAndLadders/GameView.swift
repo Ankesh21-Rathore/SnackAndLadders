@@ -10,16 +10,24 @@ import SwiftUI
 struct GameView: View {
     let columns = Array(repeating: GridItem(.flexible(minimum: 0, maximum: .infinity), spacing: 4), count: 10)
     @State private var value = 1
-    @State private var player: Int = 1
-    @State private var player1Position = 1
-    @State private var player2Position = 1
+    @State private var player: Int = 0
+    @State private var playerPosition: [Int] = [1, 1]
     
-    @State private var player1Scale: CGFloat = 1.0
-    @State private var player2Scale: CGFloat = 1.0
+    @State private var playerScale: [CGFloat] = [1.0, 1.0]
     
-    @State private var isMoving = false
+    @State private var isMoving = false // movement of pawn
     @State private var isGameOver = false
+    @State private var isGameStarted = false // game starting
     @State private var winnerMessage = ""
+    
+    let numberOfPlayers: Int
+    
+    init(numberOfPlayers: Int = 2) {
+        self.numberOfPlayers = numberOfPlayers
+        _playerPosition = State(initialValue: Array(repeating: 1, count: numberOfPlayers))
+        _playerScale = State(initialValue: Array(repeating: 1.0, count: numberOfPlayers))
+    }
+    let playerColors: [Color] = [.blue, .yellow, .red, .green, .brown]
     
     @State private var cellCenters: [Int: CGPoint] = [:]
     let ladderPairs: [(start: Int, end: Int)] = [
@@ -44,60 +52,62 @@ struct GameView: View {
                 RadialGradient(colors: [.mint, .green, .black], center: .center, startRadius: 10, endRadius: 500)
                     .ignoresSafeArea()
                 
-                LazyVStack {
-                    playerview(for: player)
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10)
-                            .foregroundStyle(.white)
-                            .opacity(0.5)
-                        
-                        GridPosition()
-                        
-                            .coordinateSpace(name: "BOARD")
-                        
-                        // Draw ladders
-                        ForEach(ladderPairs, id: \.start) { ladder in
-                            if let startPt = cellCenters[ladder.start],
-                               let endPt = cellCenters[ladder.end] {
-                                LadderShape(start: startPt, end: endPt, ladderWidth: 8, ladderHeight: 10)
-                                    .stroke(Color.brown, lineWidth: 3) 
-                                    .shadow(color: .black.opacity(0.3), radius: 1, x: 1, y: 1)
-                                    .allowsHitTesting(false)
+                    LazyVStack {
+                        playerview(for: player + 1)
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .foregroundStyle(.white)
+                                .opacity(0.5)
+                            
+                            GridPosition()
+                            
+                                .coordinateSpace(name: "BOARD")
+                            
+                            // Draw ladders
+                            ForEach(ladderPairs, id: \.start) { ladder in
+                                if let startPt = cellCenters[ladder.start],
+                                   let endPt = cellCenters[ladder.end] {
+                                    LadderShape(start: startPt, end: endPt, ladderWidth: 8, ladderHeight: 10)
+                                        .stroke(Color.brown, lineWidth: 3)
+                                        .shadow(color: .black.opacity(0.3), radius: 1, x: 1, y: 1)
+                                        .allowsHitTesting(false)
+                                }
+                            }
+                            
+                            // Snake View
+                            // Draw Snakes
+                            ForEach(snakePairs, id: \.start) { snake in
+                                if let startPt = cellCenters[snake.start],
+                                   let endPt = cellCenters[snake.end] {
+                                    let snakeGradiant = LinearGradient(
+                                        colors: [.green, .orange, .mint], // Color transitions from head (start) to tail (end)
+                                        startPoint: UnitPoint(x: startPt.x / 405, y: startPt.y / 405), // Normalized to board size
+                                        endPoint: UnitPoint(x: endPt.x / 405, y: endPt.y / 405)
+                                    )
+                                    SnakeShape(start: startPt, end: endPt, bodyWidth: 10)
+                                        .stroke(
+                                            snakeGradiant,
+                                            style: StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round))
+                                        .shadow(color: .black.opacity(0.3), radius: 2, x: 1, y: 1)
+                                        .allowsHitTesting(false)
+                                }
                             }
                         }
+                        .frame(width: 405, height: 405)
+                        .padding()
                         
-                        // Snacke View
-                        // Draw Snakes
-                        ForEach(snakePairs, id: \.start) { snake in
-                            if let startPt = cellCenters[snake.start],
-                               let endPt = cellCenters[snake.end] {
-                                let snakeGradiant = LinearGradient(
-                                    colors: [.green, .orange, .mint], // Color transitions from head (start) to tail (end)
-                                                startPoint: UnitPoint(x: startPt.x / 405, y: startPt.y / 405), // Normalized to board size
-                                                endPoint: UnitPoint(x: endPt.x / 405, y: endPt.y / 405)
-                                )
-                                SnakeShape(start: startPt, end: endPt, bodyWidth: 10)
-                                    .stroke(
-                                        snakeGradiant,
-                                        style: StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round))
-                                    .shadow(color: .black.opacity(0.3), radius: 2, x: 1, y: 1)
-                                    .allowsHitTesting(false)
+                        // Dice View
+                        Dice { rolled in
+                            value = rolled
+                            moveCurrentPawn(by: rolled)
+                        }
+                        .disabled(isMoving || isGameOver)
+                        .alert(winnerMessage, isPresented: $isGameOver) {
+                            Button("Play Again") {
+                                resetGame()
                             }
                         }
-                    }
-                    .frame(width: 405, height: 405)
-                    .padding()
-                    // Dice View
-                    Dice { rolled in
-                        value = rolled
-                        moveCurrentPawn(by: rolled)
-                    }
-                    .disabled(isMoving || isGameOver)
-                    .alert(winnerMessage, isPresented: $isGameOver) {
-                        Button("Play Again") {
-                            resetGame()
-                        }
-                    }
+                    
                 }
             }
         }
@@ -114,8 +124,8 @@ struct GameView: View {
                         let index = (row) * 10 + (1 + colOffset)
                         
                         RoundedRectangle(cornerRadius: 3)
-                            .foregroundStyle(styledColour(index: index)) // colour according to indices
-                            .opacity(0.9)
+                            .foregroundStyle(.white) // red -> white
+                            .border(.blue, width: 1) // plane -> making border
                             .aspectRatio(1, contentMode: .fit)
                             .background(
                                     GeometryReader { geo in
@@ -135,20 +145,18 @@ struct GameView: View {
                             )
                             .overlay(
                                 HStack {
-                                    if player1Position == index {
-                                        PawnShape()
-                                            .fill(Color.mint)
-                                            .frame(width: 12, height: 12)
-                                            .scaleEffect(player1Scale)
-                                    }
-                                    if player2Position == index {
-                                        PawnShape()
-                                            .fill(Color.yellow)
-                                            .frame(width: 12, height: 12)
-                                            .scaleEffect(player2Scale)
+                                    ForEach(0..<numberOfPlayers, id: \.self) { pIdx in
+                                        if playerPosition[pIdx] == index {
+                                            if playerPosition[pIdx] == index {
+                                                PawnShape()
+                                                    .fill(playerColors[pIdx])
+                                                    .frame(width: 12, height: 12)
+                                                    .scaleEffect(playerScale[pIdx])
+                                            }
+                                        }
                                     }
                                 }
-                                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: player2Position)
+                                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: playerPosition)
                             )
                     }
                 }
@@ -161,98 +169,70 @@ struct GameView: View {
         isMoving = true
         
         // Determine current and proposed positions safely
-        let currentPosition = (player == 1) ? player1Position : player2Position
+        let pIdx = player
+        let currentPosition = playerPosition[pIdx]
         let proposed = currentPosition + steps
-        let targetPosition = min(100, proposed)
 
         // If the proposed move would exceed 100, do not move at all
         if proposed > 100 {
             isMoving = false
+            if steps != 6 {
+                player = (player + 1) % numberOfPlayers
+            }
             return
         }
 
         // Apply the bulk step so the timer animates step-by-step up to targetPosition
-        if player == 1 {
-            player1Position = currentPosition // ensure starting from current
-        } else {
-            player2Position = currentPosition
-        }
+        let targetPosition = proposed
         
         // Step-by-step movement animation loop
         Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { timer in
-            if player == 1 {
-                if player1Position < targetPosition {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        player1Position += 1
-                        player1Scale = 1.4
-                    }
-                    withAnimation(.spring(response: 0.2, dampingFraction: 0.5).delay(0.1)) {
-                        player1Scale = 1.0
-                    }
-                } else {
-                    timer.invalidate()
-                    
-                    // Snake & Lader section
-                    let newPos = laddersAndSnack(at: player1Position) ?? player1Position
-                    
-                    if newPos != player1Position {
-                        // Trigger smooth slide/climb animation if position changed
-                        withAnimation(.easeInOut(duration: 0.6)) {
-                            player1Position = newPos
-                        }
-                    }
-                    
-                    isMoving = false
-                    
-                    if player1Position == 100 {
-                        winnerMessage = "Player 1 Wins!"
-                        isGameOver = true
-                    } else if steps == 6 { // if dice-face is 6
-                        player = 1
-                    } else {
-                        player = 2
-                    }
+            if playerPosition[pIdx] < targetPosition {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    playerPosition[pIdx] += 1
+                    playerScale[pIdx] = 1.4
+                }
+                withAnimation(.spring(response: 0.2, dampingFraction: 0.5).delay(0.1)) {
+                    playerScale[pIdx] = 1.0
                 }
             } else {
-                if player2Position < targetPosition {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        player2Position += 1
-                        player2Scale = 1.4
-                    }
-                    withAnimation(.spring(response: 0.2, dampingFraction: 0.5).delay(0.1)) {
-                        player2Scale = 1.0
-                    }
-                } else {
-                    timer.invalidate()
-                    // --- SNAKE & LADDER LOGIC START ---
-                    let newPos = laddersAndSnack(at: player2Position) ?? player2Position
-                                    
-                    if newPos != player2Position {
-                        withAnimation(.easeInOut(duration: 0.6)) {
-                            player2Position = newPos
-                        }
-                    }
-                    isMoving = false
-                    
-                    if player2Position == 100 {
-                        winnerMessage = "Player 2 Wins!"
-                        isGameOver = true
-                    } else if steps == 6 { // if dice-face is 6
-                        player = 2
-                    } else {
-                        player = 1
+                timer.invalidate()
+                
+                // Snake & Lader section
+                let newPos = laddersAndSnack(at: playerPosition[pIdx]) ?? playerPosition[pIdx]
+                
+                if newPos != playerPosition[pIdx] {
+                    // Trigger smooth slide/climb animation if position changed
+                    withAnimation(.easeInOut(duration: 0.6)) {
+                        playerPosition[pIdx] = newPos
                     }
                 }
+                
+                isMoving = false
+                
+                if playerPosition[pIdx] == 100 {
+                    winnerMessage = "Player \(pIdx + 1) Wins!"
+                    isGameOver = true
+                } else if steps == 6 { // if dice-face is 6
+                    player = pIdx
+                } else {
+                    player = (player+1)%numberOfPlayers
+                }
+                
             }
         }
     }
     
-    func resetGame() {
-        player1Position = 1
-        player2Position = 1
+    func startGame() {
         player = 1
+        playerPosition = Array(repeating: 1, count: numberOfPlayers)
+        playerScale = Array(repeating: 1.0, count: numberOfPlayers)
+        isGameStarted = true
+    }
+    func resetGame() {
         isGameOver = false
         isMoving = false
+        isGameStarted = false
     }
     
     func styledColour(index: Int) -> Color {

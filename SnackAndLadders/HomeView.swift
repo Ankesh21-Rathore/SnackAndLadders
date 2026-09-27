@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeView: View {
     @State private var isPresented: Bool = false
     @State private var selectedPlayerCount: Int = 2
+    @State private var isGameStarted = false
     
     let playerColors: [Color] = [.blue, .yellow, .red, .green, .brown] // for matching 1 to 5 players colors
     
@@ -22,37 +23,29 @@ struct HomeView: View {
                     .foregroundStyle(.primary)
                     .opacity(0.2)
                     .frame(width: 400, height: 400)
-                VStack {
-                    HStack {
-                        playerView(count: 2)
-                        playerView(count: 3)
+                
+                    VStack {
+                        HStack {
+                            playerView(count: 2)
+                            playerView(count: 3)
+                        }
+                        HStack {
+                            playerView(count: 4)
+                            playerView(count: 5)
+                        }
                     }
-                    HStack {
-                        playerView(count: 4)
-                        playerView(count: 5)
-                    }
-                }
             }
             .navigationTitle("Snake and Ladders")
-        }
-        .sheet(isPresented: $isPresented) {
-            NavigationStack {
-                VStack {
-                    NavigationLink(destination: GameView()) {
-                        Label("Play Game (\(selectedPlayerCount) Players)", systemImage: "play.circle.fill")
-                            .scaledToFit()
-                            .foregroundStyle(.mint)
-                            .bold()
-                    }
-                }
+            .navigationDestination(isPresented: $isGameStarted) {
+                GameView(numberOfPlayers: selectedPlayerCount)
             }
-
         }
     }
     
     func playerView(count: Int) -> some View {
         Button {
             selectedPlayerCount = count
+            isGameStarted = true
             isPresented.toggle()
         } label: {
             ZStack {
