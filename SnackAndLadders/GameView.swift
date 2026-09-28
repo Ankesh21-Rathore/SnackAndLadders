@@ -273,9 +273,15 @@ struct GameView: View {
     // Players batting
     
     func playerview(for player: Int) -> some View {
-        Text("Player: \(player)")
-            .font(.largeTitle)
-            .foregroundStyle(.regularMaterial)
+        HStack {
+            PawnShape()
+                .fill(playerColors[player-1])
+                .frame(width: 20, height: 20)
+            
+            Text("Player: \(player)'s Turn")
+                .font(.largeTitle)
+                .foregroundStyle(playerColors[player-1])
+        }
     }
     
 }
