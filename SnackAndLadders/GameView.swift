@@ -23,10 +23,13 @@ struct GameView: View {
     let numberOfPlayers: Int
     
     init(numberOfPlayers: Int = 2) {
-        self.numberOfPlayers = numberOfPlayers
-        _playerPosition = State(initialValue: Array(repeating: 1, count: numberOfPlayers))
-        _playerScale = State(initialValue: Array(repeating: 1.0, count: numberOfPlayers))
+        let count = max(2, min(numberOfPlayers, 5)) // Bounds check between 2 and 5 players
+        self.numberOfPlayers = count
+        // Correct state initialization starting everyone at position 1
+        _playerPosition = State(initialValue: Array(repeating: 1, count: count))
+        _playerScale = State(initialValue: Array(repeating: 1.0, count: count))
     }
+    
     let playerColors: [Color] = [.blue, .yellow, .red, .green, .brown]
     
     @State private var cellCenters: [Int: CGPoint] = [:]
@@ -52,61 +55,62 @@ struct GameView: View {
                 RadialGradient(colors: [.mint, .green, .black], center: .center, startRadius: 10, endRadius: 500)
                     .ignoresSafeArea()
                 
-                    LazyVStack {
-                        playerview(for: player + 1)
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 10)
-                                .foregroundStyle(.white)
-                                .opacity(0.5)
-                            
-                            GridPosition()
-                            
-                                .coordinateSpace(name: "BOARD")
-                            
-                            // Draw ladders
-                            ForEach(ladderPairs, id: \.start) { ladder in
-                                if let startPt = cellCenters[ladder.start],
-                                   let endPt = cellCenters[ladder.end] {
-                                    LadderShape(start: startPt, end: endPt, ladderWidth: 8, ladderHeight: 10)
-                                        .stroke(Color.brown, lineWidth: 3)
-                                        .shadow(color: .black.opacity(0.3), radius: 1, x: 1, y: 1)
-                                        .allowsHitTesting(false)
-                                }
-                            }
-                            
-                            // Snake View
-                            // Draw Snakes
-                            ForEach(snakePairs, id: \.start) { snake in
-                                if let startPt = cellCenters[snake.start],
-                                   let endPt = cellCenters[snake.end] {
-                                    let snakeGradiant = LinearGradient(
-                                        colors: [.green, .orange, .mint], // Color transitions from head (start) to tail (end)
-                                        startPoint: UnitPoint(x: startPt.x / 405, y: startPt.y / 405), // Normalized to board size
-                                        endPoint: UnitPoint(x: endPt.x / 405, y: endPt.y / 405)
-                                    )
-                                    SnakeShape(start: startPt, end: endPt, bodyWidth: 10)
-                                        .stroke(
-                                            snakeGradiant,
-                                            style: StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round))
-                                        .shadow(color: .black.opacity(0.3), radius: 2, x: 1, y: 1)
-                                        .allowsHitTesting(false)
-                                }
-                            }
-                        }
-                        .frame(width: 405, height: 405)
-                        .padding()
+                LazyVStack {
+                    playerview(for: player + 1)
+                    
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .foregroundStyle(.white)
+                            .opacity(0.5)
                         
-                        // Dice View
-                        Dice { rolled in
-                            value = rolled
-                            moveCurrentPawn(by: rolled)
-                        }
-                        .disabled(isMoving || isGameOver)
-                        .alert(winnerMessage, isPresented: $isGameOver) {
-                            Button("Play Again") {
-                                resetGame()
+                        GridPosition()
+                        
+                            .coordinateSpace(name: "BOARD")
+                        
+                        // Draw ladders
+                        ForEach(ladderPairs, id: \.start) { ladder in
+                            if let startPt = cellCenters[ladder.start],
+                               let endPt = cellCenters[ladder.end] {
+                                LadderShape(start: startPt, end: endPt, ladderWidth: 8, ladderHeight: 10)
+                                    .stroke(Color.brown, lineWidth: 3)
+                                    .shadow(color: .black.opacity(0.3), radius: 1, x: 1, y: 1)
+                                    .allowsHitTesting(false)
                             }
                         }
+                        
+                        // Snake View
+                        // Draw Snakes
+                        ForEach(snakePairs, id: \.start) { snake in
+                            if let startPt = cellCenters[snake.start],
+                               let endPt = cellCenters[snake.end] {
+                                let snakeGradiant = LinearGradient(
+                                    colors: [.green, .orange, .mint], // Color transitions from head (start) to tail (end)
+                                    startPoint: UnitPoint(x: startPt.x / 405, y: startPt.y / 405), // Normalized to board size
+                                    endPoint: UnitPoint(x: endPt.x / 405, y: endPt.y / 405)
+                                )
+                                SnakeShape(start: startPt, end: endPt, bodyWidth: 10)
+                                    .stroke(
+                                        snakeGradiant,
+                                        style: StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round))
+                                    .shadow(color: .black.opacity(0.3), radius: 2, x: 1, y: 1)
+                                    .allowsHitTesting(false)
+                            }
+                        }
+                    }
+                    .frame(width: 405, height: 405)
+                    .padding()
+                    
+                    // Dice View
+                    Dice { rolled in
+                        value = rolled
+                        moveCurrentPawn(by: rolled)
+                    }
+                    .disabled(isMoving || isGameOver)
+                    .alert(winnerMessage, isPresented: $isGameOver) {
+                        Button("Play Again") {
+                            resetGame()
+                        }
+                    }
                     
                 }
             }
@@ -128,15 +132,15 @@ struct GameView: View {
                             .border(.blue, width: 1) // plane -> making border
                             .aspectRatio(1, contentMode: .fit)
                             .background(
-                                    GeometryReader { geo in
-                                        Color.clear.onAppear {
-                                            cellCenters[index] = CGPoint(
-                                                x: geo.frame(in: .named("BOARD")).midX,
-                                                y: geo.frame(in: .named("BOARD")).midY
-                                            )
-                                        }
+                                GeometryReader { geo in
+                                    Color.clear.onAppear {
+                                        cellCenters[index] = CGPoint(
+                                            x: geo.frame(in: .named("BOARD")).midX,
+                                            y: geo.frame(in: .named("BOARD")).midY
+                                        )
                                     }
-                                )
+                                }
+                            )
                             .overlay(
                                 Text("\(index)")
                                     .foregroundColor(.black)
@@ -144,19 +148,26 @@ struct GameView: View {
                                 alignment: .bottomLeading
                             )
                             .overlay(
-                                HStack {
+                                LazyVGrid( // Render all pawns currently occupying the square
+                                    columns: [
+                                        GridItem(.flexible(), spacing: 1),
+                                        GridItem(.flexible(), spacing: 1),
+                                        GridItem(.flexible(), spacing: 1)
+                                    ],
+                                    spacing: 1
+                                ) {
                                     ForEach(0..<numberOfPlayers, id: \.self) { pIdx in
                                         if playerPosition[pIdx] == index {
-                                            if playerPosition[pIdx] == index {
-                                                PawnShape()
-                                                    .fill(playerColors[pIdx])
-                                                    .frame(width: 12, height: 12)
-                                                    .scaleEffect(playerScale[pIdx])
-                                            }
+                                            
+                                            PawnShape()
+                                                .fill(playerColors[pIdx])
+                                                .frame(width: 12, height: 12)
+                                                .scaleEffect(playerScale[pIdx])
+                                            
                                         }
                                     }
                                 }
-                                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: playerPosition)
+                                    .animation(.spring(response: 0.4, dampingFraction: 0.7), value: playerPosition)
                             )
                     }
                 }

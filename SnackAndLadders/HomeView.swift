@@ -59,10 +59,22 @@ struct HomeView: View {
                     let topRow = Array(colorsToDisplay.prefix(2))
                     let middleRow = Array(colorsToDisplay.dropFirst(2).prefix(2))
                     let bottomRow = Array(colorsToDisplay.dropFirst(4))
-                    VStack(spacing: 8) {
-                        
+                VStack(spacing: 8) {
+                    
+                    HStack(spacing: 8) {
+                        ForEach(topRow, id: \.self) { color in
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .foregroundStyle(color)
+                                    .frame(width: 40, height: 40)
+                                Image(systemName: "person.fill")
+                                    .foregroundStyle(.black)
+                            }
+                        }
+                    }
+                    if !middleRow.isEmpty {
                         HStack(spacing: 8) {
-                            ForEach(topRow, id: \.self) { color in
+                            ForEach(middleRow, id: \.self) { color in
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 10)
                                         .foregroundStyle(color)
@@ -72,34 +84,22 @@ struct HomeView: View {
                                 }
                             }
                         }
-                            if !middleRow.isEmpty {
-                                HStack(spacing: 8) {
-                                    ForEach(middleRow, id: \.self) { color in
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(color)
-                                                .frame(width: 40, height: 40)
-                                            Image(systemName: "person.fill")
-                                                .foregroundStyle(.black)
-                                        }
-                                    }
+                    }
+                    if !bottomRow.isEmpty {
+                        HStack(spacing: 8) {
+                            ForEach(bottomRow, id: \.self) { color in
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .foregroundStyle(color)
+                                        .frame(width: 40, height: 40)
+                                    Image(systemName: "person.fill")
+                                        .foregroundStyle(.black)
                                 }
                             }
-                            if !bottomRow.isEmpty {
-                                HStack(spacing: 8) {
-                                    ForEach(bottomRow, id: \.self) { color in
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .foregroundStyle(color)
-                                                .frame(width: 40, height: 40)
-                                            Image(systemName: "person.fill")
-                                                .foregroundStyle(.black)
-                                        }
-                                    }
-                                }
-                            }
-                            
-                        
+                        }
+                    }
+                    
+                    
                 }
             }
         }
