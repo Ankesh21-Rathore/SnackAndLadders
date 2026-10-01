@@ -11,15 +11,20 @@ import SceneKit
 struct Dice: View {
     @State private var value = 1
     @State private var rotaion: Double = 0.0
-    
+    let diceColor: Color
     var onRoll: (Int) -> Void
     
+    init(diceColor: Color, onRoll: @escaping (Int) -> Void) {
+        self.diceColor = diceColor
+        self.onRoll = onRoll
+    }
+
     var body: some View {
         ZStack { // For Dice
             Button(action: rollDice) { // For Dice rotation as botton
                 
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(0.8))
+                    .fill(diceColor.opacity(0.8))
                     .cornerRadius(10)
                     .shadow(color: .red.opacity(0.6), radius: 8, x: 0, y: 4)
                     .overlay(
@@ -142,3 +147,4 @@ struct DiceFace: View {
             .aspectRatio(1, contentMode: .fit)
     }
 }
+

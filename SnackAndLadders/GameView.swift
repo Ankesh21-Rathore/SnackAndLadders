@@ -101,11 +101,12 @@ struct GameView: View {
                     .padding()
                     
                     // Dice View
-                    Dice { rolled in
+                    Dice(diceColor: playerColors[player]) { rolled in
                         value = rolled
                         moveCurrentPawn(by: rolled)
                     }
                     .disabled(isMoving || isGameOver)
+                    .animation(.easeInOut(duration: 0.3), value: player) // Smooth color transition when turns change
                     .alert(winnerMessage, isPresented: $isGameOver) {
                         Button("Play Again") {
                             resetGame()
